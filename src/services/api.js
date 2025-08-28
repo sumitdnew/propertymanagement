@@ -1,7 +1,10 @@
-const API_BASE_URL = 'http://localhost:5000/api';
-
 class ApiService {
   constructor() {
+    // Use environment variable for base URL, fallback to localhost for development
+    this.baseURL = process.env.REACT_APP_API_URL || 
+                   (process.env.NODE_ENV === 'production' 
+                     ? 'https://your-backend-domain.com/api' 
+                     : 'http://localhost:5000/api');
     this.token = localStorage.getItem('token');
   }
 
@@ -27,7 +30,7 @@ class ApiService {
   }
 
   async request(endpoint, options = {}) {
-    const url = `${API_BASE_URL}${endpoint}`;
+    const url = `${this.baseURL}${endpoint}`;
     const config = {
       headers: this.getHeaders(),
       ...options,
@@ -255,6 +258,351 @@ class ApiService {
       return response;
     } catch (error) {
       console.error('Error creating group post:', error);
+      throw error;
+    }
+  }
+
+  // ==================== BUSINESS API METHODS ====================
+
+  // Business Registration and Management
+  async registerBusiness(businessData) {
+    try {
+      const response = await this.request('/businesses/register', {
+        method: 'POST',
+        body: JSON.stringify(businessData)
+      });
+      return response;
+    } catch (error) {
+      console.error('Error registering business:', error);
+      throw error;
+    }
+  }
+
+  async getBusinessProfile() {
+    try {
+      const response = await this.request('/businesses/profile');
+      return response;
+    } catch (error) {
+      console.error('Error fetching business profile:', error);
+      throw error;
+    }
+  }
+
+  async updateBusinessProfile(businessData) {
+    try {
+      const response = await this.request('/businesses/profile', {
+        method: 'PUT',
+        body: JSON.stringify(businessData)
+      });
+      return response;
+    } catch (error) {
+      console.error('Error updating business profile:', error);
+      throw error;
+    }
+  }
+
+  async getBusinessReviews() {
+    try {
+      const response = await this.request('/businesses/reviews');
+      return response;
+    } catch (error) {
+      console.error('Error fetching business reviews:', error);
+      throw error;
+    }
+  }
+
+  async getBusinessAnalytics(period = '30') {
+    try {
+      const response = await this.request(`/businesses/analytics?period=${period}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching business analytics:', error);
+      throw error;
+    }
+  }
+
+  // Admin Business Management
+  async getAdminBusinesses() {
+    try {
+      const response = await this.request('/admin/businesses');
+      return response;
+    } catch (error) {
+      console.error('Error fetching businesses for admin:', error);
+      throw error;
+    }
+  }
+
+  async updateBusinessStatus(businessId, status) {
+    try {
+      const response = await this.request(`/admin/businesses/${businessId}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status })
+      });
+      return response;
+    } catch (error) {
+      console.error('Error updating business status:', error);
+      throw error;
+    }
+  }
+
+  async getAdminBusinessDetails(businessId) {
+    try {
+      const response = await this.request(`/admin/businesses/${businessId}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching business details for admin:', error);
+      throw error;
+    }
+  }
+
+  // Public Business Endpoints
+  async getPublicBusinesses() {
+    try {
+      const response = await this.request('/businesses');
+      return response;
+    } catch (error) {
+      console.error('Error fetching public businesses:', error);
+      throw error;
+    }
+  }
+
+  async getPublicBusinessDetails(businessId) {
+    try {
+      const response = await this.request(`/businesses/${businessId}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching public business details:', error);
+      throw error;
+    }
+  }
+
+  async addBusinessReview(businessId, reviewData) {
+    try {
+      const response = await this.request(`/businesses/${businessId}/reviews`, {
+        method: 'POST',
+        body: JSON.stringify(reviewData)
+      });
+      return response;
+    } catch (error) {
+      console.error('Error adding business review:', error);
+      throw error;
+    }
+  }
+
+  async getPublicBusinessReviews(businessId, params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await this.request(`/businesses/${businessId}/reviews?${queryString}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching public business reviews:', error);
+      throw error;
+    }
+  }
+
+  // ==================== ENHANCED REVIEW API METHODS ====================
+
+  async voteOnReview(reviewId, voteType) {
+    try {
+      const response = await this.request(`/reviews/${reviewId}/vote`, {
+        method: 'POST',
+        body: JSON.stringify({ voteType })
+      });
+      return response;
+    } catch (error) {
+      console.error('Error voting on review:', error);
+      throw error;
+    }
+  }
+
+  async reportReview(reviewId, reason, description) {
+    try {
+      const response = await this.request(`/reviews/${reviewId}/report`, {
+        method: 'POST',
+        body: JSON.stringify({ reason, description })
+      });
+      return response;
+    } catch (error) {
+      console.error('Error reporting review:', error);
+      throw error;
+    }
+  }
+
+  async respondToReview(reviewId, response) {
+    try {
+      const response = await this.request(`/reviews/${reviewId}/respond`, {
+        method: 'POST',
+        body: JSON.stringify({ response })
+      });
+      return response;
+    } catch (error) {
+      console.error('Error responding to review:', error);
+      throw error;
+    }
+  }
+
+  async getReviewNotifications(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await this.request(`/review-notifications?${queryString}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching review notifications:', error);
+      throw error;
+    }
+  }
+
+  async markNotificationAsRead(notificationId) {
+    try {
+      const response = await this.request(`/review-notifications/${notificationId}/read`, {
+        method: 'PUT'
+      });
+      return response;
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      throw error;
+    }
+  }
+
+  // ==================== BUSINESS CATEGORIES API METHODS ====================
+
+  async getBusinessCategories() {
+    try {
+      const response = await this.request('/business-categories');
+      return response;
+    } catch (error) {
+      console.error('Error fetching business categories:', error);
+      throw error;
+    }
+  }
+
+  async createBusinessCategory(categoryData) {
+    try {
+      const response = await this.request('/admin/business-categories', {
+        method: 'POST',
+        body: JSON.stringify(categoryData)
+      });
+      return response;
+    } catch (error) {
+      console.error('Error creating business category:', error);
+      throw error;
+    }
+  }
+
+  async updateBusinessCategory(categoryId, categoryData) {
+    try {
+      const response = await this.request(`/admin/business-categories/${categoryId}`, {
+        method: 'PUT',
+        body: JSON.stringify(categoryData)
+      });
+      return response;
+    } catch (error) {
+      console.error('Error updating business category:', error);
+      throw error;
+    }
+  }
+
+  async deleteBusinessCategory(categoryId) {
+    try {
+      const response = await this.request(`/admin/business-categories/${categoryId}`, {
+        method: 'DELETE'
+      });
+      return response;
+    } catch (error) {
+      console.error('Error deleting business category:', error);
+      throw error;
+    }
+  }
+
+  // ==================== BUSINESS SEARCH API METHODS ====================
+
+  async searchBusinesses(searchParams) {
+    try {
+      const queryString = new URLSearchParams(searchParams).toString();
+      const response = await this.request(`/businesses/search?${queryString}`);
+      return response;
+    } catch (error) {
+      console.error('Error searching businesses:', error);
+      throw error;
+    }
+  }
+
+  async getBusinessesByCategory(categoryId, params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await this.request(`/businesses/category/${categoryId}?${queryString}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching businesses by category:', error);
+      throw error;
+    }
+  }
+
+  async getNearbyBusinesses(params) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await this.request(`/businesses/nearby?${queryString}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching nearby businesses:', error);
+      throw error;
+    }
+  }
+
+  // ==================== ADMIN REVIEW MODERATION API METHODS ====================
+
+  async getAdminReviews(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await this.request(`/admin/reviews?${queryString}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching admin reviews:', error);
+      throw error;
+    }
+  }
+
+  async moderateReview(reviewId, action, reason = '') {
+    try {
+      const response = await this.request(`/admin/reviews/${reviewId}/moderate`, {
+        method: 'POST',
+        body: JSON.stringify({ action, reason })
+      });
+      return response;
+    } catch (error) {
+      console.error('Error moderating review:', error);
+      throw error;
+    }
+  }
+
+  async getBusinessReviews(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await this.request(`/business/reviews?${queryString}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching business reviews:', error);
+      throw error;
+    }
+  }
+
+  async getBusinessAnalytics() {
+    try {
+      const response = await this.request('/business/analytics');
+      return response;
+    } catch (error) {
+      console.error('Error fetching business analytics:', error);
+      throw error;
+    }
+  }
+
+  async getReviewNotifications(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await this.request(`/business/review-notifications?${queryString}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching review notifications:', error);
       throw error;
     }
   }

@@ -9,6 +9,7 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "server": "node server/index.js",
+    "start": "node server/index.js",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
     "generate-data": "node scripts/generateSampleData.js",
     "quick-data": "node scripts/quickData.js"
